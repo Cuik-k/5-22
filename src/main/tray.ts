@@ -40,7 +40,7 @@ export function createTray(
 ): void {
   const icon = createTrayIcon()
   tray = new Tray(icon)
-  tray.setToolTip('Desktop Sticky Notes')
+  tray.setToolTip('NoteMm')
 
   tray.on('right-click', () => {
     tray?.popUpContextMenu(buildMenu(callbacks))

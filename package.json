@@ -1,7 +1,7 @@
 {
-  "name": "desktop-sticky-notes",
+  "name": "notemm",
   "version": "1.0.0",
-  "description": "Desktop sticky notes for Windows",
+  "description": "NoteMm - 桌面便签工具",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -10,12 +10,12 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@tiptap/extension-color": "^2.9.0",
     "@tiptap/extension-placeholder": "^2.9.0",
     "@tiptap/extension-task-item": "^2.9.0",
     "@tiptap/extension-task-list": "^2.9.0",
-    "@tiptap/extension-underline": "^2.9.0",
     "@tiptap/extension-text-style": "^2.9.0",
-    "@tiptap/extension-color": "^2.9.0",
+    "@tiptap/extension-underline": "^2.9.0",
     "@tiptap/pm": "^2.9.0",
     "@tiptap/react": "^2.9.0",
     "@tiptap/starter-kit": "^2.9.0",
@@ -26,6 +26,8 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "@types/uuid": "^9.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.0",

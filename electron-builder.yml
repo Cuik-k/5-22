@@ -1,5 +1,5 @@
-appId: com.stickynotes.desktop
-productName: Desktop Sticky Notes
+appId: com.notemm.desktop
+productName: NoteMm
 directories:
   buildResources: resources
   output: dist

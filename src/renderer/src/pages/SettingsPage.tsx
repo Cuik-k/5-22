@@ -20,7 +20,7 @@ export default function SettingsPage() {
         </div>
         <div className="border-t border-gray-100 pt-4">
           <h3 className="text-sm font-semibold text-gray-700 mb-2">关于</h3>
-          <p className="text-sm text-gray-400">Desktop Sticky Notes v1.0.0</p>
+          <p className="text-sm text-gray-400">NoteMm v1.0.0</p>
         </div>
       </div>
     </div>
