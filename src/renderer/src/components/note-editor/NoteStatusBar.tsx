@@ -1,12 +1,14 @@
 import React from 'react'
 import { useNoteStore } from '../../stores/useNoteStore'
+import { NOTE_COLORS } from '../../../../shared/types'
 
 interface Props {
+  isChecklist: boolean
   onToggleChecklist: () => void
   onInsertCheckbox: () => void
 }
 
-export default function NoteStatusBar({ onToggleChecklist, onInsertCheckbox }: Props) {
+export default function NoteStatusBar({ isChecklist, onToggleChecklist, onInsertCheckbox }: Props) {
   const note = useNoteStore(s => s.note)
   const updateNote = useNoteStore(s => s.updateNote)
   const [showAppearance, setShowAppearance] = React.useState(false)
@@ -24,19 +26,19 @@ export default function NoteStatusBar({ onToggleChecklist, onInsertCheckbox }: P
       </button>
 
       <button
-        className={`w-7 h-7 flex items-center justify-center rounded text-sm ${note.is_checklist ? 'bg-blue-100 text-blue-600' : 'hover:bg-black/10'}`}
-        title={note.is_checklist ? '退出清单模式' : '清单模式'}
+        className={`w-7 h-7 flex items-center justify-center rounded text-sm transition-colors ${isChecklist ? 'bg-blue-100 text-blue-600' : 'hover:bg-black/10 text-gray-500'}`}
+        title={isChecklist ? '退出清单模式' : '清单模式'}
         onClick={onToggleChecklist}
       >
         ☑
       </button>
 
       <button
-        className="w-7 h-7 flex items-center justify-center rounded text-sm hover:bg-black/10"
+        className="w-7 h-7 flex items-center justify-center rounded text-sm text-gray-500 hover:bg-black/10 transition-colors"
         title="插入复选框"
         onClick={onInsertCheckbox}
       >
-        ⊕
+        ⊠
       </button>
 
       <div className="flex-1" />
@@ -57,7 +59,7 @@ function AppearancePanel({ onClose }: { onClose: () => void }) {
   const updateNote = useNoteStore(s => s.updateNote)
   if (!note) return null
 
-  const colors = ['#FFE066', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE']
+  const colors = NOTE_COLORS
   const shadowOptions = [
     { value: 'none', label: '无' },
     { value: 'small', label: '小' },

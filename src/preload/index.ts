@@ -20,7 +20,8 @@ const api: ElectronAPI = {
   openSettings: () => ipcRenderer.invoke(IPC_CHANNELS.WINDOW_OPEN_SETTINGS),
 
   setPinned: (id, pinned) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_SET_PINNED, id, pinned),
-  exportNoteAsTxt: (id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT_TXT, id)
+  exportNoteAsTxt: (id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT_TXT, id),
+  reorderNotes: (orderedIds) => ipcRenderer.invoke(IPC_CHANNELS.NOTES_REORDER, orderedIds)
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)

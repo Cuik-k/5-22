@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 import { app } from 'electron'
 import path from 'path'
-import { Note, NoteCreateInput, NoteUpdateInput, NOTE_DEFAULTS } from '../shared/types'
+import { Note, NoteCreateInput, NoteUpdateInput, NOTE_DEFAULTS, randomNoteColor } from '../shared/types'
 import { v4 as uuidv4 } from 'uuid'
 
 let db: Database.Database
@@ -26,15 +26,28 @@ export function initDatabase(): void {
       height        REAL DEFAULT 340,
       pinned        INTEGER DEFAULT 0,
       is_checklist  INTEGER DEFAULT 0,
+      sort_order    INTEGER DEFAULT 0,
       created_at    TEXT DEFAULT (datetime('now')),
       updated_at    TEXT DEFAULT (datetime('now'))
     )
   `)
+  // Migration: add sort_order if upgrading from older version
+  try { db.exec('ALTER TABLE notes ADD COLUMN sort_order INTEGER DEFAULT 0') } catch(e) {}
 }
 
 export function getAllNotes(): Note[] {
-  const rows = db.prepare('SELECT * FROM notes ORDER BY updated_at DESC').all() as any[]
+  const rows = db.prepare('SELECT * FROM notes ORDER BY sort_order ASC, updated_at DESC').all() as any[]
   return rows.map(rowToNote)
+}
+
+export function reorderNotes(orderedIds: string[]): void {
+  const stmt = db.prepare('UPDATE notes SET sort_order = ? WHERE id = ?')
+  const tx = db.transaction(() => {
+    orderedIds.forEach((id, index) => {
+      stmt.run(index, id)
+    })
+  })
+  tx()
 }
 
 export function getNoteById(id: string): Note | undefined {
@@ -44,11 +57,12 @@ export function getNoteById(id: string): Note | undefined {
 
 export function createNote(input?: NoteCreateInput): Note {
   const defaults = input ? { ...NOTE_DEFAULTS, ...input } : NOTE_DEFAULTS
+  const noteColor = defaults.color || randomNoteColor()
   const note: Note = {
     id: uuidv4(),
     title: defaults.title!,
     content: defaults.content!,
-    color: defaults.color!,
+    color: noteColor,
     font_size: defaults.font_size!,
     opacity: defaults.opacity!,
     border_radius: defaults.border_radius!,

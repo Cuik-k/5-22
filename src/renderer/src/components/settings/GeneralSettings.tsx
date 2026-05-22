@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { AppSettings } from '../../../shared/types'
+import { AppSettings } from '../../../../shared/types'
 
 export default function GeneralSettings() {
   const [settings, setSettings] = useState<AppSettings | null>(null)

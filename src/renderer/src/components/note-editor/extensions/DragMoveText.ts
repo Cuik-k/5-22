@@ -7,7 +7,6 @@ export const DragMoveText = Extension.create({
   addProseMirrorPlugins() {
     let dragStartPos: { from: number; to: number } | null = null
     let dragElement: HTMLElement | null = null
-    let draggedText = ''
 
     return [
       new Plugin({
@@ -16,21 +15,32 @@ export const DragMoveText = Extension.create({
         props: {
           handleDOMEvents: {
             mousedown(view, event) {
-              const highlighted = view.dom.querySelector('.hover-highlight')
-              if (!highlighted || !(event.target as HTMLElement).closest('.hover-highlight')) return false
+              // Find highlighted decoration range
+              const hoverPluginKey = new PluginKey('hoverHighlight')
+              const hoverState = hoverPluginKey.getState(view.state) as any
 
-              let from = -1
-              let to = -1
-              view.dom.querySelectorAll('.hover-highlight').forEach(el => {
-                const pos = view.posAtDOM(el, 0)
-                if (pos > -1) {
-                  from = pos
-                  to = pos + (el.textContent || '').length
-                  draggedText = el.textContent || ''
-                }
-              })
+              if (!hoverState || !hoverState.find) {
+                return false
+              }
 
-              if (from === -1) return false
+              const decorations = hoverState.find()
+              if (!decorations || decorations.length === 0) {
+                return false
+              }
+
+              // Check if the click is on the highlighted element
+              const target = event.target as HTMLElement
+              if (!target.closest('.hover-highlight')) {
+                // Allow the click if not on highlight (for normal editing)
+                return false
+              }
+
+              const deco = decorations[0]
+              const from = deco.from
+              const to = deco.to
+              if (from === undefined || to === undefined) return false
+
+              const draggedText = view.state.doc.textBetween(from, to)
 
               dragStartPos = { from, to }
 
@@ -66,6 +76,11 @@ export const DragMoveText = Extension.create({
                     view.dispatch(tr)
                   }
                 }
+
+                // Reset highlight
+                const hoverPluginKey = new PluginKey('hoverHighlight')
+                view.dispatch(view.state.tr.setMeta(hoverPluginKey, 'reset'))
+
                 dragStartPos = null
               }
 

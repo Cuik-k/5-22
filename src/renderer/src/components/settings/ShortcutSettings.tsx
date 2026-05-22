@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { AppSettings, DEFAULT_SETTINGS } from '../../../shared/types'
+import { AppSettings, DEFAULT_SETTINGS } from '../../../../shared/types'
 
 interface ShortcutRow {
   label: string

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Note, NoteUpdateInput } from '../../shared/types'
+import { Note, NoteUpdateInput } from '../../../shared/types'
 
 interface NoteState {
   note: Note | null
@@ -42,8 +42,7 @@ export const useNoteStore = create<NoteState>((set, get) => ({
       font_size: note.font_size,
       opacity: note.opacity,
       border_radius: note.border_radius,
-      shadow: note.shadow,
-      is_checklist: note.is_checklist
+      shadow: note.shadow
     })
     set({ isDirty: false })
   },

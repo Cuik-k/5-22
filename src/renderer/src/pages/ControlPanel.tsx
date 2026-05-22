@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { Note } from '../../shared/types'
+import { Note } from '../../../shared/types'
+function extractText(content: string): string {
+  try {
+    const blocks = JSON.parse(content)
+    if (Array.isArray(blocks)) return blocks.map((b: any) => b.text || '').join(' ')
+  } catch {}
+  return content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')
+}
+
 import SearchBar from '../components/control-panel/SearchBar'
 import NoteList from '../components/control-panel/NoteList'
 
@@ -54,7 +62,8 @@ export default function ControlPanel() {
         loadNotes()
       }},
       { label: '复制内容', action: () => {
-        navigator.clipboard.writeText(note.content.replace(/<[^>]*>/g, ''))
+        const text = extractText(note.content)
+        navigator.clipboard.writeText(text)
       }},
       { label: '导出为 TXT', action: () => window.electronAPI.exportNoteAsTxt(note.id) },
       { label: '删除', action: async () => {
@@ -95,7 +104,10 @@ export default function ControlPanel() {
         </button>
       </div>
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
-      <NoteList notes={notes} onSelect={handleSelect} onContextMenu={handleContextMenu} />
+      <NoteList notes={notes} onSelect={handleSelect} onContextMenu={handleContextMenu} onReorder={async (ids) => {
+        await window.electronAPI.reorderNotes(ids)
+        loadNotes()
+      }} />
       <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100 text-xs text-gray-400">
         <span>共 {notes.length} 张便签</span>
         <div className="flex gap-3">

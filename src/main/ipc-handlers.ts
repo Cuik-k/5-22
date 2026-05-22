@@ -1,6 +1,6 @@
 import { ipcMain, dialog } from 'electron'
 import { IPC_CHANNELS, NoteCreateInput, NoteUpdateInput } from '../shared/types'
-import { getAllNotes, getNoteById, createNote, updateNote, deleteNote, searchNotes } from './database'
+import { getAllNotes, getNoteById, createNote, updateNote, deleteNote, searchNotes, reorderNotes } from './database'
 import { getSettings, setSettings } from './settings-store'
 import { createNoteWindow, showNoteWindow, closeNoteWindow, isNoteWindowOpen, openControlPanel, openSettings, setNotePinned } from './window-manager'
 import fs from 'fs'
@@ -79,7 +79,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.NOTE_EXPORT_TXT, async (_e, id: string) => {
     const note = getNoteById(id)
     if (!note) return
-    const plainText = note.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')
+    const plainText = extractPlainText(note.content)
     const result = await dialog.showSaveDialog({
       filters: [{ name: 'Text', extensions: ['txt'] }],
       defaultPath: `${note.title || 'untitled'}.txt`
@@ -111,13 +111,26 @@ export function registerIpcHandlers(): void {
     setNotePinned(id, pinned)
     updateNote(id, { pinned })
   })
+
+  // Reorder
+  ipcMain.handle(IPC_CHANNELS.NOTES_REORDER, (_e, orderedIds: string[]) => {
+    reorderNotes(orderedIds)
+  })
+}
+
+function extractPlainText(content: string): string {
+  try {
+    const blocks = JSON.parse(content)
+    if (Array.isArray(blocks)) return blocks.map((b: any) => b.text || '').join(' ')
+  } catch {}
+  return content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')
 }
 
 function buildExportHtml(notes: Array<{ title: string; content: string; color: string; updated_at: string }>): string {
   const items = notes.map(n => `
     <div style="background:${n.color};padding:16px;margin:8px 0;border-radius:8px">
       <h3>${n.title || '无标题'}</h3>
-      <div>${n.content}</div>
+      <div>${extractPlainText(n.content)}</div>
       <small>${n.updated_at}</small>
     </div>
   `).join('\n')

@@ -1,35 +1,53 @@
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 export const HoverHighlight = Extension.create({
   name: 'hoverHighlight',
 
   addProseMirrorPlugins() {
+    const pluginKey = new PluginKey('hoverHighlight')
+
     return [
       new Plugin({
-        key: new PluginKey('hoverHighlight'),
+        key: pluginKey,
+
+        state: {
+          init() {
+            return DecorationSet.empty
+          },
+          apply(tr, oldSet) {
+            // Keep decorations through transactions unless we're replacing them
+            const meta = tr.getMeta(pluginKey)
+            if (meta === 'reset') return DecorationSet.empty
+            if (meta) return meta
+            return oldSet.map(tr.mapping, tr.doc)
+          }
+        },
 
         props: {
+          decorations(state) {
+            return pluginKey.getState(state)
+          },
+
           handleDOMEvents: {
             mousemove(view, event) {
               const target = event.target as HTMLElement
-
               if (!target.closest('.ProseMirror')) return false
 
-              // Remove previous highlights
-              view.dom.querySelectorAll('.hover-highlight').forEach(el => {
-                el.classList.remove('hover-highlight')
-              })
-
-              // Find the text node under cursor
               const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })
-              if (!pos) return false
+              if (!pos) {
+                view.dispatch(view.state.tr.setMeta(pluginKey, 'reset'))
+                return false
+              }
 
               const resolved = view.state.doc.resolve(pos.pos)
               const node = resolved.parent
-              if (!node || !node.isText) return false
+              if (!node || !node.isText) {
+                view.dispatch(view.state.tr.setMeta(pluginKey, 'reset'))
+                return false
+              }
 
-              // Find word boundaries
               const text = node.text || ''
               const offset = pos.pos - resolved.start()
               const start = text.lastIndexOf(' ', offset - 1) + 1
@@ -40,16 +58,22 @@ export const HoverHighlight = Extension.create({
                 const from = resolved.start() + start
                 const to = resolved.start() + wordEnd
 
-                const dom = view.domAtPos(from)
-                if (dom.node && dom.node.parentElement) {
-                  const textNode = dom.node
-                  const span = document.createElement('span')
-                  span.className = 'hover-highlight'
-                  textNode.parentElement.insertBefore(span, textNode)
-                  span.appendChild(textNode)
-                }
+                const deco = Decoration.inline(from, to, {
+                  nodeName: 'span',
+                  class: 'hover-highlight'
+                })
+
+                const set = DecorationSet.create(view.state.doc, [deco])
+                view.dispatch(view.state.tr.setMeta(pluginKey, set))
+              } else {
+                view.dispatch(view.state.tr.setMeta(pluginKey, 'reset'))
               }
 
+              return false
+            },
+
+            mouseleave() {
+              // Don't reset on mouseleave - let the next mousemove handle it
               return false
             }
           }

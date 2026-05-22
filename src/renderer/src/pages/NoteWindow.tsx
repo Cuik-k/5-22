@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback } from 'react'
-import NoteEditor from '../components/note-editor/NoteEditor'
+import React, { useEffect, useCallback, useMemo } from 'react'
+import type { TextBlock } from '../../../shared/types'
 import NoteToolbar from '../components/note-editor/NoteToolbar'
-import NoteStatusBar from '../components/note-editor/NoteStatusBar'
+import CanvasEditor from '../components/canvas-editor/CanvasEditor'
 import { useNoteStore } from '../stores/useNoteStore'
 import { useAutoSave } from '../hooks/useAutoSave'
 
@@ -20,21 +20,18 @@ export default function NoteWindow({ noteId }: Props) {
     loadNote(noteId)
   }, [noteId, loadNote])
 
-  const handleContentUpdate = useCallback((content: string) => {
-    updateNote({ content })
-  }, [updateNote])
-
-  const handleToggleChecklist = useCallback(() => {
-    if (!note) return
-    updateNote({ is_checklist: !note.is_checklist })
-  }, [note, updateNote])
-
-  const handleInsertCheckbox = useCallback(() => {
-    const editorEl = document.querySelector('.ProseMirror') as any
-    if (editorEl?.__tiptapEditor) {
-      editorEl.__tiptapEditor.commands.toggleTaskItem()
+  const blocks = useMemo<TextBlock[]>(() => {
+    if (!note?.content) return []
+    try {
+      return JSON.parse(note.content)
+    } catch {
+      return []
     }
-  }, [])
+  }, [note?.content])
+
+  const handleBlocksChange = useCallback((newBlocks: TextBlock[]) => {
+    updateNote({ content: JSON.stringify(newBlocks) })
+  }, [updateNote])
 
   if (!note) {
     return (
@@ -62,13 +59,8 @@ export default function NoteWindow({ noteId }: Props) {
     >
       <NoteToolbar />
       <div className="flex-1 overflow-hidden">
-        <NoteEditor noteId={noteId} onUpdate={handleContentUpdate} />
+        <CanvasEditor blocks={blocks} onChange={handleBlocksChange} defaultFontSize={note.font_size || '14px'} />
       </div>
-      <NoteStatusBar
-        onToggleChecklist={handleToggleChecklist}
-        onInsertCheckbox={handleInsertCheckbox}
-      />
-      {/* Resize grip */}
       <div
         className="absolute bottom-1 right-1 w-3 h-3 cursor-se-resize opacity-30 hover:opacity-100 no-drag"
         style={{

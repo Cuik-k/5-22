@@ -7,7 +7,15 @@ let controlPanelWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
 
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js')
-const RENDERER_HTML = path.join(__dirname, '../renderer/index.html')
+
+function getRendererUrl(hash: string): string {
+  const devUrl = process.env.ELECTRON_RENDERER_URL
+  if (devUrl) {
+    return `${devUrl}#${hash}`
+  }
+  const filePath = path.join(__dirname, '../renderer/index.html')
+  return `file://${filePath}#${hash}`
+}
 
 function createBaseWindow(opts: { width: number; height: number; x?: number; y?: number; frame?: boolean; alwaysOnTop?: boolean; resizable?: boolean }): BrowserWindow {
   return new BrowserWindow({
@@ -37,7 +45,7 @@ export function createNoteWindow(note: Note): BrowserWindow {
     alwaysOnTop: note.pinned
   })
 
-  win.loadURL(`${RENDERER_HTML}#/note/${note.id}`)
+  win.loadURL(getRendererUrl(`/note/${note.id}`))
   win.on('moved', () => handleNoteMoved(note.id, win))
   win.on('resize', () => handleNoteResized(note.id, win))
 
@@ -99,7 +107,7 @@ export function openControlPanel(): void {
   const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize
   controlPanelWindow = createBaseWindow({ width: 420, height: 520, x: Math.round((screenWidth - 420) / 2), y: 80, frame: false, resizable: false })
 
-  controlPanelWindow.loadURL(`${RENDERER_HTML}#/panel`)
+  controlPanelWindow.loadURL(getRendererUrl('/panel'))
   controlPanelWindow.on('blur', () => {
     controlPanelWindow?.close()
     controlPanelWindow = null
@@ -117,7 +125,7 @@ export function openSettings(): void {
   }
 
   settingsWindow = createBaseWindow({ width: 500, height: 560, frame: true, resizable: false })
-  settingsWindow.loadURL(`${RENDERER_HTML}#/settings`)
+  settingsWindow.loadURL(getRendererUrl('/settings'))
   settingsWindow.on('closed', () => {
     settingsWindow = null
   })

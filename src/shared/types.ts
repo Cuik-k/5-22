@@ -1,7 +1,27 @@
+export interface TextBlock {
+  id: string
+  type: 'text' | 'checklist' | 'image'
+  text: string
+  x: number
+  y: number
+  fontSize: string
+  fontFamily: string
+  color: string
+  bold: boolean
+  italic: boolean
+  underline: boolean
+  underlineColor: string
+  checked: boolean
+  // Image fields
+  src?: string          // base64 data URL
+  blockWidth?: number   // image display width
+  blockHeight?: number  // image display height
+}
+
 export interface Note {
   id: string
   title: string
-  content: string       // HTML from TipTap
+  content: string       // JSON string of TextBlock[]
   color: string
   font_size: string
   opacity: number
@@ -49,18 +69,24 @@ export interface NoteUpdateInput {
   is_checklist?: boolean
 }
 
+export const NOTE_COLORS = ['#FFE066', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE']
+
+export function randomNoteColor(): string {
+  return NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)]
+}
+
 export const NOTE_DEFAULTS: Required<NoteCreateInput> = {
   title: '',
-  content: '',
-  color: '#FFE066',
+  content: '[]',
+  color: '',  // Will be set to random by createNote
   font_size: '14px',
   opacity: 0.92,
   border_radius: '8px',
   shadow: 'medium',
   x: 200,
   y: 200,
-  width: 300,
-  height: 340,
+  width: 360,
+  height: 400,
   pinned: false,
   is_checklist: false
 }
@@ -110,7 +136,8 @@ export const IPC_CHANNELS = {
   WINDOW_OPEN_SETTINGS: 'window:open-settings',
   NOTE_SET_PINNED: 'note:set-pinned',
   NOTE_DELETE: 'note:delete',
-  NOTE_EXPORT_TXT: 'note:export-txt'
+  NOTE_EXPORT_TXT: 'note:export-txt',
+  NOTES_REORDER: 'notes:reorder'
 } as const
 
 export interface ElectronAPI {
@@ -130,4 +157,5 @@ export interface ElectronAPI {
   openSettings: () => Promise<void>
   setPinned: (id: string, pinned: boolean) => Promise<void>
   exportNoteAsTxt: (id: string) => Promise<void>
+  reorderNotes: (orderedIds: string[]) => Promise<void>
 }

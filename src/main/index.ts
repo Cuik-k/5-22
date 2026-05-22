@@ -1,7 +1,7 @@
 import { app, Menu, dialog } from 'electron'
-import { initDatabase, getAllNotes } from './database'
+import { initDatabase, getAllNotes, createNote } from './database'
 import { registerIpcHandlers } from './ipc-handlers'
-import { createNoteWindow, closeAllNoteWindows, openControlPanel, toggleAllNoteWindows } from './window-manager'
+import { createNoteWindow, closeAllNoteWindows, openControlPanel, openSettings, toggleAllNoteWindows } from './window-manager'
 import { createTray } from './tray'
 import { registerShortcuts, unregisterAll } from './shortcuts'
 import { getSettings } from './settings-store'
@@ -30,7 +30,6 @@ app.on('ready', () => {
   // Create tray
   const trayCallbacks = {
     onNewNote: () => {
-      const { createNote } = require('./database')
       const note = createNote()
       createNoteWindow(note)
     },
@@ -41,7 +40,7 @@ app.on('ready', () => {
         const items = notes.map(n => `
           <div style="background:${n.color};padding:16px;margin:8px 0;border-radius:8px">
             <h3>${n.title || '无标题'}</h3>
-            <div>${n.content}</div>
+            <div>${(n.content || '').replace(/<[^>]*>/g, '')}</div>
             <small>${n.updated_at}</small>
           </div>
         `).join('\n')
@@ -57,10 +56,7 @@ app.on('ready', () => {
         }
       })
     },
-    onOpenSettings: () => {
-      const { openSettings } = require('./window-manager')
-      openSettings()
-    },
+    onOpenSettings: () => openSettings(),
     onQuit: () => {
       unregisterAll()
       closeAllNoteWindows()
