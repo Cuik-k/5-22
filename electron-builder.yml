@@ -1,0 +1,15 @@
+appId: com.stickynotes.desktop
+productName: Desktop Sticky Notes
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+  - resources/**/*
+win:
+  target:
+    - nsis
+  icon: resources/tray-icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
