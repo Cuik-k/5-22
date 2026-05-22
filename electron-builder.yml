@@ -11,6 +11,7 @@ win:
     - nsis
   icon: resources/tray-icon.png
   signAndEditExecutable: false
+afterPack: scripts/after-pack.js
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
