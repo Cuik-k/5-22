@@ -7,6 +7,7 @@ let controlPanelWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
 
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js')
+const ICON_PATH = path.join(__dirname, '../../resources/tray-icon.png')
 
 function getRendererUrl(hash: string): string {
   const devUrl = process.env.ELECTRON_RENDERER_URL
@@ -28,6 +29,7 @@ function createBaseWindow(opts: { width: number; height: number; x?: number; y?:
     alwaysOnTop: opts.alwaysOnTop ?? false,
     resizable: opts.resizable ?? true,
     skipTaskbar: true,
+    icon: ICON_PATH,
     webPreferences: {
       preload: PRELOAD_PATH,
       contextIsolation: true,
