@@ -143,6 +143,14 @@ export default function CanvasEditor({ blocks, onChange, defaultFontSize }: Prop
     onChange(blocksRef.current.map(b => b.id === id ? { ...b, blockWidth: w, blockHeight: h } : b))
   }, [onChange])
 
+  const handleFontResize = useCallback((id: string, deltaPx: number) => {
+    const b = blocksRef.current.find(x => x.id === id)
+    if (!b) return
+    const currentPx = parseInt(b.fontSize) || 14
+    const newPx = Math.max(8, Math.min(128, currentPx + deltaPx))
+    onChange(blocksRef.current.map(x => x.id === id ? { ...x, fontSize: newPx + 'px' } : x))
+  }, [onChange])
+
   const handleCanvasUp = useCallback(() => setDragInfo(null), [])
   const handleBlockRight = useCallback((e: React.MouseEvent, block: TextBlock) => {
     e.preventDefault(); e.stopPropagation()
@@ -189,6 +197,7 @@ export default function CanvasEditor({ blocks, onChange, defaultFontSize }: Prop
             onHover={h => setHoverId(h ? b.id : null)}
             onCheckToggle={() => onChange(blocksRef.current.map(x => x.id === b.id ? { ...x, checked: !x.checked } : x))}
             onResize={handleResize}
+            onFontResize={handleFontResize}
           />
         ))}
         {blocks.length === 0 && (
@@ -323,11 +332,12 @@ function TBtn({ on, title, onClick, children }: { on: boolean; title: string; on
 
 // ============ Display Block ============
 
-function Block({ block, isHovered, isDragging, onMouseDown, onContextMenu, onHover, onCheckToggle, onResize }: {
+function Block({ block, isHovered, isDragging, onMouseDown, onContextMenu, onHover, onCheckToggle, onResize, onFontResize }: {
   block: TextBlock; isHovered: boolean; isDragging: boolean
   onMouseDown: (e: React.MouseEvent) => void; onContextMenu: (e: React.MouseEvent) => void
   onHover: (h: boolean) => void; onCheckToggle: () => void
   onResize?: (id: string, w: number, h: number) => void
+  onFontResize?: (id: string, deltaPx: number) => void
 }) {
   // Image block
   if (block.type === 'image' && block.src) {
@@ -367,7 +377,7 @@ function Block({ block, isHovered, isDragging, onMouseDown, onContextMenu, onHov
           fontStyle: block.italic ? 'italic' : 'normal',
           textDecoration: block.underline ? 'underline' : 'none',
           textDecorationColor: block.underlineColor, textDecorationThickness: '1.5px',
-          backgroundColor: isHovered ? 'rgba(251,191,36,0.25)' : 'transparent',
+          backgroundColor: isHovered ? 'rgba(255,255,255,0.45)' : 'transparent',
           cursor: isDragging ? 'grabbing' : (isHovered ? 'grab' : 'text'),
           borderRadius: '3px', maxWidth: '100%', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
           opacity: block.type === 'checklist' && block.checked ? 0.45 : 1
@@ -379,6 +389,46 @@ function Block({ block, isHovered, isDragging, onMouseDown, onContextMenu, onHov
         )}
         <span>{block.text || (isHovered ? '...' : '')}</span>
       </div>
+      {/* Font size resize handle on hover */}
+      {isHovered && onFontResize && (
+        <FontResizeHandle blockId={block.id} onResize={onFontResize} />
+      )}
+    </div>
+  )
+}
+
+function FontResizeHandle({ blockId, onResize }: { blockId: string; onResize: (id: string, deltaPx: number) => void }) {
+  const accumulatedRef = useRef(0)
+
+  const handleDown = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); e.preventDefault()
+    let lastX = e.clientX; let lastY = e.clientY
+    accumulatedRef.current = 0
+    const onMove = (ev: MouseEvent) => {
+      const dx = ev.clientX - lastX
+      const dy = lastY - ev.clientY  // up/right = larger
+      // Diagonal: use the larger delta magnitude
+      const mag = Math.abs(dx) > Math.abs(dy) ? dx : dy
+      accumulatedRef.current += mag
+      const steps = Math.round(accumulatedRef.current / 6)  // 6px per 1 font size step
+      if (steps !== 0) {
+        onResize(blockId, steps)
+        accumulatedRef.current -= steps * 6
+      }
+      lastX = ev.clientX; lastY = ev.clientY
+    }
+    const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [blockId, onResize])
+
+  return (
+    <div className="absolute -right-1 -bottom-1 w-4 h-4 cursor-se-resize flex items-center justify-center"
+      onMouseDown={handleDown}
+    >
+      <svg width="8" height="8" viewBox="0 0 8 8" style={{ opacity: 0.7 }}>
+        <path d="M7 0L7 7L0 7" fill="none" stroke="white" strokeWidth="1.5" />
+      </svg>
     </div>
   )
 }

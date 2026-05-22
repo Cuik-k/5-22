@@ -61,13 +61,14 @@ export default function NoteWindow({ noteId }: Props) {
       <div className="flex-1 overflow-hidden">
         <CanvasEditor blocks={blocks} onChange={handleBlocksChange} defaultFontSize={note.font_size || '14px'} />
       </div>
-      <div
-        className="absolute bottom-1 right-1 w-3 h-3 cursor-se-resize opacity-30 hover:opacity-100 no-drag"
-        style={{
-          borderRight: '3px solid rgba(0,0,0,0.3)',
-          borderBottom: '3px solid rgba(0,0,0,0.3)'
-        }}
-      />
+      {/* Invisible resize edges */}
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 cursor-s-resize no-drag" />
+      <div className="absolute top-0 bottom-0 right-0 w-1.5 cursor-e-resize no-drag" />
+      <div className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-center justify-center no-drag">
+        <svg width="10" height="10" viewBox="0 0 8 8" style={{ opacity: 0.5 }}>
+          <path d="M7 0L7 7L0 7" fill="none" stroke="white" strokeWidth="1.5" />
+        </svg>
+      </div>
     </div>
   )
 }
