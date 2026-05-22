@@ -12,7 +12,7 @@ function createTrayIcon(): Electron.NativeImage {
   if (fs.existsSync(iconPath)) {
     const stats = fs.statSync(iconPath)
     if (stats.size > 100) { // real icon, not placeholder
-      return nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+      return nativeImage.createFromPath(iconPath).resize({ width: 32, height: 32 })
     }
   }
 
@@ -26,7 +26,7 @@ function createTrayIcon(): Electron.NativeImage {
     <line x1="6" y1="18" x2="14" y2="18" stroke="#D4A017" stroke-width="1" stroke-linecap="round"/>
   </svg>`
   const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
-  return nativeImage.createFromDataURL(dataUrl).resize({ width: 16, height: 16 })
+  return nativeImage.createFromDataURL(dataUrl).resize({ width: 32, height: 32 })
 }
 
 export function createTray(
