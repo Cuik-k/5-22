@@ -10,6 +10,7 @@ win:
   target:
     - nsis
   icon: resources/tray-icon.png
+  signAndEditExecutable: false
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

@@ -2,6 +2,7 @@
   "name": "notemm",
   "version": "1.0.0",
   "description": "NoteMm - 桌面便签工具",
+  "author": "CUIKUN",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -20,7 +21,6 @@
     "@tiptap/react": "^2.9.0",
     "@tiptap/starter-kit": "^2.9.0",
     "better-sqlite3": "^11.0.0",
-    "electron": "^32.3.3",
     "electron-store": "^8.2.0",
     "uuid": "^9.0.0",
     "zustand": "^4.5.0"
@@ -33,6 +33,7 @@
     "@types/uuid": "^9.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.0",
+    "electron": "^32.3.3",
     "electron-builder": "^24.0.0",
     "electron-vite": "^2.3.0",
     "postcss": "^8.4.0",
